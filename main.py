@@ -19,13 +19,13 @@ class ArticleModel(db.Model):
   tags = db.Column(db.String, nullable=True)
   
   def __repr__(self):
-    return f"Video(id={id}, slug={slug}"
+    return '<Article %r>' %self.id
 
 # db.create_all()
 
 article_put_args = reqparse.RequestParser()
 article_put_args.add_argument("id", type=str, help="ID of article", required=True)
-article_put_args.add_argument("slug", type=str, help="slug of article")
+article_put_args.add_argument("slug", type=str, help="slug of article", required=True)
 article_put_args.add_argument("title", type=str, help="title of article")
 article_put_args.add_argument("dek", type=str, help="dek of article")
 article_put_args.add_argument("published_date", type=str, help="pub date of article")
@@ -34,18 +34,23 @@ article_put_args.add_argument("word_count", type=int, help="word count of articl
 article_put_args.add_argument("tags", type=str, help="tags of article")
 
 
-resource_fields = {
+resource_fields = { "article" : {
   'id': fields.String,
   'slug': fields.String,
   'title': fields.String,
   'dek': fields.String,
+  'published_date': fields.String,
+  'canonical_url': fields.String,
+  'word_count': fields.Integer,
+  'tags': fields.String
+  }
 }
 
 class Article(Resource):
   
   @marshal_with(resource_fields)
   def get(self, article_id):
-    result = ArticleModel.query.filter_by(id = article_id).first()
+    result = ArticleModel.query.get(article_id)
     if not result:
       abort(404, message="could not find article")
     return result
@@ -53,20 +58,29 @@ class Article(Resource):
   @marshal_with(resource_fields)
   def put(self):
     args = article_put_args.parse_args()
-    article = ArticleModel(
-      id=args['id'],
-      slug=args['slug'],
-      title=args['title'],
-      dek=args['dek'],
-      published_date=args['published_date'],
-      canonical_url=args['canonical_url'],
-      word_count=args['word_count'],
-      tags=args['tags']
-    )
-    db.session.add(article)
-    db.session.commit()
-    return article, 201
-
+    existing_entry = ArticleModel.query.filter_by(id = args['id'], slug = args['slug']).first()
+    if not existing_entry:
+      article = ArticleModel(
+        id=args['id'],
+        slug=args['slug'],
+        title=args['title'],
+        dek=args['dek'],
+        published_date=args['published_date'],
+        canonical_url=args['canonical_url'],
+        word_count=args['word_count'],
+        tags=args['tags']
+      )
+      db.session.add(article)
+      db.session.commit()
+      return article, 201
+    
+    else:
+      print("ENTRY ALREADY EXISTS", existing_entry)
+      if args['title']:
+        existing_entry.title = args['title']
+      db.session.commit()
+      return existing_entry, 201
+    
 
 api.add_resource(Article, "/article", "/article/<string:article_id>")
 
