@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_sqlalchemy import SQLAlchemy
+import ast
 
 app = Flask(__name__)
 api = Api(app)
@@ -69,33 +70,23 @@ class LeadArtModel(db.Model):
 
 # argument parsing
 article_put_args = reqparse.RequestParser()
-article_put_args.add_argument("id", type=str, required=True)
-article_put_args.add_argument("slug", type=str)
-article_put_args.add_argument("title", type=str)
-article_put_args.add_argument("dek", type=str)
-article_put_args.add_argument("published_date", type=str)
-article_put_args.add_argument("canonical_url", type=str, required=True)
-article_put_args.add_argument("word_count", type=int)
-article_put_args.add_argument("tags", type=str)
-article_put_args.add_argument("embeds", type=list, location='json')
-article_put_args.add_argument("lead_art", type=dict)
-article_put_args.add_argument("authors", type=list, location='json')
+article_put_args.add_argument("article", type=str, required=True)
 
 
 #serializer
 resource_fields = {
-    'id': fields.String,
-    'slug': fields.String,
-    'title': fields.String,
-    'dek': fields.String,
-    'published_date': fields.String,
-    'canonical_url': fields.String,
-    'word_count': fields.Integer,
-    'tags': fields.String,
-    'embeds': fields.List(fields.String),
-    'authors': fields.List(fields.String),
-    'lead_art': fields.String
-  }
+  'id': fields.String,
+  'slug': fields.String,
+  'title': fields.String,
+  'dek': fields.String,
+  'published_date': fields.String,
+  'canonical_url': fields.String,
+  'word_count': fields.Integer,
+  'tags': fields.String,
+  'embeds': fields.List(fields.String),
+  'authors': fields.List(fields.String),
+  'lead_art': fields.String
+}
 
 class Article(Resource):
   
@@ -110,7 +101,10 @@ class Article(Resource):
   # put article JSON
   @marshal_with(resource_fields)
   def put(self):
+    # unpack args from 'article' envelope
     args = article_put_args.parse_args()
+    args = ast.literal_eval(args['article'])
+    print("HEEEEEEEEEEEEEEEEEEEEY", args)
     #check if entry with id and canonical_url already exists
     existing_entry = ArticleModel.query.filter_by(id = args['id'], canonical_url = args['canonical_url']).first()
     
