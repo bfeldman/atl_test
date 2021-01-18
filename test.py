@@ -4,7 +4,7 @@ import json
 BASE_URL = "http://localhost:5000/"
 null = []
 
-article = { "article": {
+article1 = { "article": {
   "id": "b73b8b0e-0240-42a9-874c-00445d51dd8a",
   "slug": "tracee-ellis-ross-on-hollywood-girlfriends-netflix",
   "title": "Tracee Ellis Ross Felt Lost in Hollywood. Then She Changed Course.",
@@ -59,10 +59,10 @@ article2 = { "article": {
     }
 }}
 
-article = json.dumps(article, indent = 2)
+article1 = json.dumps(article1, indent = 2)
 article2 = json.dumps(article2)
 
-response = requests.put(BASE_URL + "article", article, headers = {"Content-Type": "application/json"})
+response1 = requests.put(BASE_URL + "article", article1, headers = {"Content-Type": "application/json"})
 response2 = requests.put(BASE_URL + "article", article2, headers = {"Content-Type": "application/json"})
-print(response)
-print(response2)
+print("ARTICLE 1:", response1.text)
+print("ARTICLE 2:", response2.text)

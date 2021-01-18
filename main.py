@@ -66,7 +66,7 @@ class LeadArtModel(db.Model):
     return '<LeadArt %r>' %self.id
 
 # uncomment when running main.py for the first time to create database
-#db.create_all()
+db.create_all()
 
 # argument parsing
 article_put_args = reqparse.RequestParser()
