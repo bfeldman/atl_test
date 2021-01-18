@@ -60,7 +60,7 @@ class LeadArtModel(db.Model):
 
 
 
-db.create_all()
+#db.create_all()
 
 article_put_args = reqparse.RequestParser()
 article_put_args.add_argument("id", type=str, required=True)
@@ -71,9 +71,9 @@ article_put_args.add_argument("published_date", type=str)
 article_put_args.add_argument("canonical_url", type=str)
 article_put_args.add_argument("word_count", type=int)
 article_put_args.add_argument("tags", type=str)
-article_put_args.add_argument("embeds", type=list)
+article_put_args.add_argument("embeds", type=list, location='json')
 article_put_args.add_argument("lead_art", type=dict)
-article_put_args.add_argument("authors", type=list)
+article_put_args.add_argument("authors", type=list, location='json')
 
 
 resource_fields = { "article" : {
@@ -100,8 +100,10 @@ class Article(Resource):
   @marshal_with(resource_fields)
   def put(self):
     args = article_put_args.parse_args()
-    existing_entry = ArticleModel.query.filter_by(id = args['id'], slug = args['slug']).first()
+    existing_entry = ArticleModel.query.filter_by(id = args['id'], canonical_url = args['canonical_url']).first()
+    
     if not existing_entry:
+      
       article = ArticleModel(
         id=args['id'],
         slug=args['slug'],
@@ -110,8 +112,19 @@ class Article(Resource):
         published_date=args['published_date'],
         canonical_url=args['canonical_url'],
         word_count=args['word_count'],
-        tags=args['tags']
+        tags=args['tags'],
       )
+        
+      if args['embeds']:
+        embeds = args['embeds']
+        for i in embeds:
+          #save to embed model
+          embed = EmbedModel(
+            id = i['id']
+          )
+          article.embeds.append(embed)
+
+      
       db.session.add(article)
       db.session.commit()
       return article, 201
