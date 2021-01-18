@@ -35,10 +35,9 @@ class EmbedModel(db.Model):
 class AuthorModel(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   slug = db.Column(db.String, nullable=True)
-  
   def __repr__(self):
     return '<Author %r>' %self.id
-    
+
 # article model
 class ArticleModel(db.Model):
   id = db.Column(db.String, primary_key=True)
@@ -53,11 +52,11 @@ class ArticleModel(db.Model):
   lead_art = db.Column(db.Integer, db.ForeignKey('lead_art_model.id', onupdate="CASCADE"), nullable=True)
   embeds = db.relationship('EmbedModel', secondary=embed_table, lazy='subquery', backref=db.backref('articles', lazy=True))
   authors = db.relationship('AuthorModel', secondary=author_table, lazy='subquery', backref=db.backref('articles', lazy=True))
-  
+
   def __repr__(self):
     return '<Article %r>' %self.id
-    
-#lead art model (one-to-many relationship) 
+
+#lead art model (one-to-many relationship)
 class LeadArtModel(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   type = db.Column(db.String, nullable=True)
@@ -89,15 +88,15 @@ resource_fields = {
 }
 
 class Article(Resource):
-  
-  # get article JSON  
+
+  # get article JSON
   @marshal_with(resource_fields, envelope='article')
   def get(self, article_id):
     result = ArticleModel.query.get(article_id)
     if not result:
       abort(404, message="could not find article")
     return result
-  
+
   # put article JSON
   @marshal_with(resource_fields, envelope='article')
   def put(self):
@@ -106,7 +105,7 @@ class Article(Resource):
     args = ast.literal_eval(args['article'])
     #check if entry with id and canonical_url already exists
     existing_entry = ArticleModel.query.filter_by(id = args['id'], canonical_url = args['canonical_url']).first()
-    
+
     # create new article
     if not existing_entry:
       article = ArticleModel(
@@ -119,8 +118,8 @@ class Article(Resource):
         word_count=args['word_count'],
         tags=args['tags'],
       )
-       
-      #attach embeds, checking whether or not they're already in db 
+
+      #attach embeds, checking whether or not they're already in db
       if args['embeds']:
         embeds = args['embeds']
         for embed in embeds:
@@ -131,7 +130,7 @@ class Article(Resource):
               id = embed['id']
             )
             article.embeds.append(embed)
-      
+
       #attach authors, checking whether or not they're already in db
       if args['authors']:
         authors = args['authors']
@@ -144,7 +143,7 @@ class Article(Resource):
               slug = author['slug']
             )
             article.authors.append(author)
-      
+
       #attach lead art, checking whether or not it's already in db
       if args['lead_art']:
         lead_art = args['lead_art']
@@ -157,11 +156,11 @@ class Article(Resource):
           )
           article.lead_art = lead_art.id
           db.session.add(lead_art)
-      
+
       db.session.add(article)
       db.session.commit()
       return article, 201
-    
+
     # article update
     else:
       #update if args contain data
@@ -177,7 +176,7 @@ class Article(Resource):
         existing_entry.word_count = args['word_count']
       if args['tags']:
         existing_entry.tags = args['tags']
-      
+
       # update embeds by clearing out and then re-appending
       if args['embeds']:
         existing_entry.embeds = []
@@ -204,7 +203,7 @@ class Article(Resource):
               slug = author['slug']
             )
             existing_entry.authors.append(author)
-      
+
       # update lead art
       if args['lead_art']:
         lead_art = args['lead_art']
@@ -216,10 +215,10 @@ class Article(Resource):
             type = lead_art['type']
           )
           db.session.add(new_lead_art)
-      
+
       db.session.commit()
       return existing_entry, 201
-    
+
 
 api.add_resource(Article, "/article", "/article/<string:article_id>")
 
