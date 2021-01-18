@@ -76,25 +76,27 @@ article_put_args.add_argument("lead_art", type=dict)
 article_put_args.add_argument("authors", type=list, location='json')
 
 
-resource_fields = { "article" : {
-  'id': fields.String,
-  'slug': fields.String,
-  'title': fields.String,
-  'dek': fields.String,
-  'published_date': fields.String,
-  'canonical_url': fields.String,
-  'word_count': fields.Integer,
-  'tags': fields.String
+resource_fields = {
+    'id': fields.String,
+    'slug': fields.String,
+    'title': fields.String,
+    'dek': fields.String,
+    'published_date': fields.String,
+    'canonical_url': fields.String,
+    'word_count': fields.Integer,
+    'tags': fields.String,
+    'embeds': fields.List(fields.String),
+    'authors': fields.List(fields.String)
   }
-}
 
 class Article(Resource):
   
-  @marshal_with(resource_fields)
+  @marshal_with(resource_fields, envelope='article')
   def get(self, article_id):
     result = ArticleModel.query.get(article_id)
     if not result:
       abort(404, message="could not find article")
+    print(result.embeds)
     return result
   
   @marshal_with(resource_fields)
@@ -103,7 +105,6 @@ class Article(Resource):
     existing_entry = ArticleModel.query.filter_by(id = args['id'], canonical_url = args['canonical_url']).first()
     
     if not existing_entry:
-      
       article = ArticleModel(
         id=args['id'],
         slug=args['slug'],
@@ -117,12 +118,29 @@ class Article(Resource):
         
       if args['embeds']:
         embeds = args['embeds']
-        for i in embeds:
-          #save to embed model
+        for embed in embeds:
           embed = EmbedModel(
-            id = i['id']
+            id = embed['id']
           )
           article.embeds.append(embed)
+      
+      if args['authors']:
+        authors = args['authors']
+        for author in authors:
+          author = AuthorModel(
+            id = author['id'],
+            slug = author['slug']
+          )
+          article.authors.append(author)
+      
+      if args['lead_art']:
+        lead_art = args['lead_art']
+        lead_art = LeadArtModel(
+          id = lead_art['id'],
+          type = lead_art['type']
+        )
+        article.lead_art = lead_art.id
+        db.session.add(lead_art)
 
       
       db.session.add(article)
