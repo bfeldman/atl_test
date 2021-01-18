@@ -104,7 +104,6 @@ class Article(Resource):
     # unpack args from 'article' envelope
     args = article_put_args.parse_args()
     args = ast.literal_eval(args['article'])
-    print("HEEEEEEEEEEEEEEEEEEEEY", args)
     #check if entry with id and canonical_url already exists
     existing_entry = ArticleModel.query.filter_by(id = args['id'], canonical_url = args['canonical_url']).first()
     
