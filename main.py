@@ -99,7 +99,7 @@ class Article(Resource):
     return result
   
   # put article JSON
-  @marshal_with(resource_fields)
+  @marshal_with(resource_fields, envelope='article')
   def put(self):
     # unpack args from 'article' envelope
     args = article_put_args.parse_args()
@@ -164,7 +164,6 @@ class Article(Resource):
     
     # article update
     else:
-      print("ENTRY ALREADY EXISTS", existing_entry)
       #update if args contain data
       if args['title']:
         existing_entry.title = args['title']
@@ -185,7 +184,6 @@ class Article(Resource):
         embeds = args['embeds']
         for embed in embeds:
           if EmbedModel.query.get(embed['id']) is not None:
-            print("HEEEEEEEEEEEEEEEEEEEEY", embed)
             existing_entry.embeds.append(EmbedModel.query.get(embed['id']))
           else:
             embed = EmbedModel(
