@@ -8,10 +8,13 @@
 	- ✅ JSON containing ​id​ and ​canonical_url​ values that match an existing entry is handled as an update to an existing entry with the new content
 
 ### Known issues:
+- no irregularity handling. not sure how to address an existing `id` with a different `canonical_url` or vice versa
 - it's all one big file (blech!)
 - Article `published_date` table column is a String type when it should be DateTime
 - similarly, Article `tags` are a String. Tags could probably be their own model in a many-to-many relationship
 - models related to Article - embeds, lead art, authors - do not serialize properly.
 	- I can get the embed and author objects, displayed in a list, and I can show the lead art's ID (those are all included in GET requests) but I can't quite figure out how to transform those related things back into JSON with @marshal_with
-- `null` issue: sending the sample JSON, where `"embeds": null`, via Postman works totally fine. however, sending it via the included `test.py` file hits an error because "null" is an undefined variable. not sure why that is, some Python quirk
+- I know deleting wasn't part of the assignment, but given all of the model relationships established in the database, I'm not sure how to handle deleting entries connected to other entries via foreign keys. gotta figure out where to put the cascades, or undo the constraints. 
+- `null` issue: sending the sample JSON, where `"embeds": null`, via Postman works totally fine. however, sending it via the included `test.py` file hits an error because "null" is an undefined variable.
+	- not sure why that is, some Python quirk. so i've set what was null to an empty array in `test.py`.
 - this probably the least DRY code ever written in the history of computer science

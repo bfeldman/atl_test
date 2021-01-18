@@ -24,7 +24,11 @@
 		- many-to-many relationship with ArticleModel through join table
 - Join tables
 	- Embeds
+		- `embed_id`
+		- `article_id`
 	- Authors
+		- `author_id`
+		- `article_id`
 
 ## Setup instructions
 - navigate to the program's folder
