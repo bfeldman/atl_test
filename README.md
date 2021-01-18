@@ -1,10 +1,3 @@
-Brian Feldman submission
-
-- ✅ user can post JSON (that matches the given schema in the example) to your API endpoint
-- ✅ application parses the JSON and saves it to the database
-	- ✅ JSON containing a unique ​id​ and a unique ​canonical_url​ is added to the database as a new entry
-	- ✅ JSON containing ​id​ and ​canonical_url​ values that match an existing entry is handled as an update to an existing entry with the new content
-
 ## Database schema
 
 - Models:
@@ -13,10 +6,10 @@ Brian Feldman submission
 		- `slug` (string)
 		- `title` (string)
 		- `dek` (string)
-		- `published_date` (string)*
+		- `published_date` (string)
 		- `canonical_url` (string)
 		- `word_count` (integer)
-		- `tags` (string)*
+		- `tags` (string)
 		- `lead_art` (integer, foreign key)
 	- AuthorModel
 		- `id` (integer)
